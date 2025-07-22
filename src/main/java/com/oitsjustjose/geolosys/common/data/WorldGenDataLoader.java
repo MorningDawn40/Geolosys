@@ -1,22 +1,23 @@
 package com.oitsjustjose.geolosys.common.data;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.oitsjustjose.geolosys.Geolosys;
 import com.oitsjustjose.geolosys.api.GeolosysAPI;
 import com.oitsjustjose.geolosys.api.world.deposit.*;
 import com.oitsjustjose.geolosys.common.data.serializer.*;
 import com.oitsjustjose.geolosys.common.utils.Prospecting;
+import com.oitsjustjose.geolosys.common.world.ChunkWhitelist;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class WorldGenDataLoader extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();

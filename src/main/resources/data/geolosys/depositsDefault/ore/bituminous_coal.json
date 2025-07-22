@@ -5,7 +5,8 @@
     "yMax": -16,
     "radius": 4,
     "depth": 5,
-    "biomeTag": "#minecraft:is_overworld",
+    "biomeTag": "#minecraft:is_forest",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {

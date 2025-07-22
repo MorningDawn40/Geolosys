@@ -1,10 +1,15 @@
 {
   "type": "geolosys:deposit_dense",
   "config": {
+    "yMin": 48,
+    "yMax": 65,
+    "size": 25,
+    "biomeTag": "#minecraft:is_forest",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {
-          "block": "geolosys:malachite_ore",
+          "block": "geolosys:bauxite_ore",
           "chance": 0.9
         },
         {
@@ -14,7 +19,7 @@
       ],
       "minecraft:deepslate": [
         {
-          "block": "geolosys:deepslate_malachite_ore",
+          "block": "geolosys:deepslate_bauxite_ore",
           "chance": 0.9
         },
         {
@@ -25,14 +30,10 @@
     },
     "samples": [
       {
-        "block": "geolosys:malachite_ore_sample",
+        "block": "geolosys:bauxite_ore_sample",
         "chance": 1.0
       }
     ],
-    "yMin": -16,
-    "yMax": 90,
-    "size": 45,
-    "biomeTag": "#minecraft:is_overworld",
-    "generationWeight": 6
+    "generationWeight": 2
   }
 }

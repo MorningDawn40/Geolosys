@@ -12,6 +12,7 @@ import com.oitsjustjose.geolosys.common.CommonProxy;
 import com.oitsjustjose.geolosys.common.Registry;
 import com.oitsjustjose.geolosys.common.config.ClientConfig;
 import com.oitsjustjose.geolosys.common.config.CommonConfig;
+import com.oitsjustjose.geolosys.common.data.ChunkWhitelistLoader;
 import com.oitsjustjose.geolosys.common.data.WorldGenDataLoader;
 import com.oitsjustjose.geolosys.common.items.CoalItem;
 import com.oitsjustjose.geolosys.common.utils.Constants;
@@ -74,6 +75,7 @@ public class Geolosys {
     @SubscribeEvent
     public void onSlashReload(AddReloadListenerEvent evt) {
         evt.addListener(new WorldGenDataLoader());
+        evt.addListener(new ChunkWhitelistLoader());
     }
 
     @SubscribeEvent

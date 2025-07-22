@@ -1,15 +1,10 @@
 {
-  "type": "geolosys:deposit_layer",
+  "type": "geolosys:deposit_dense",
   "config": {
-    "yMin": -4,
-    "yMax": 32,
-    "radius": 3,
-    "depth": 4,
-    "biomeTag": "#minecraft:is_overworld",
     "blocks": {
       "default": [
         {
-          "block": "geolosys:lignite_ore",
+          "block": "geolosys:azurite_ore",
           "chance": 0.85
         },
         {
@@ -19,7 +14,7 @@
       ],
       "minecraft:deepslate": [
         {
-          "block": "geolosys:deepslate_lignite_ore",
+          "block": "geolosys:deepslate_azurite_ore",
           "chance": 0.85
         },
         {
@@ -30,10 +25,15 @@
     },
     "samples": [
       {
-        "block": "geolosys:lignite_ore_sample",
+        "block": "geolosys:azurite_ore_sample",
         "chance": 1.0
       }
     ],
-    "generationWeight": 7
+    "yMin": -49,
+    "yMax": 13,
+    "size": 80,
+    "biomeTag": "#minecraft:is_forest",
+    "chunkWhitelist": "default_whitelist",
+    "generationWeight": 3
   }
 }

@@ -4,7 +4,8 @@
     "yMin": -25,
     "yMax": 19,
     "baseRadius": 4,
-    "biomeTag": "#minecraft:is_mountain",
+    "biomeTag": "is_plains",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {

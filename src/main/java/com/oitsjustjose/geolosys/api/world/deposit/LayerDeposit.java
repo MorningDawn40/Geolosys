@@ -10,6 +10,7 @@ import com.oitsjustjose.geolosys.capability.world.IChunkGennedCapability;
 import com.oitsjustjose.geolosys.common.config.CommonConfig;
 import com.oitsjustjose.geolosys.common.data.serializer.SerializerUtils;
 import com.oitsjustjose.geolosys.common.utils.Utils;
+import com.oitsjustjose.geolosys.common.world.ChunkWhitelist;
 import com.oitsjustjose.geolosys.common.world.SampleUtils;
 import com.oitsjustjose.geolosys.common.world.feature.FeatureUtils;
 import net.minecraft.core.BlockPos;
@@ -44,11 +45,12 @@ public class LayerDeposit implements IDeposit {
     private final HashSet<BlockState> blockStateMatchers;
 
     private final TagKey<Biome> biomeTag;
+    private final String chunkWhitelistName;
     /* Hashmap of blockMatcher.getRegistryName(): sumWt */
     private final HashMap<String, Float> cumulOreWtMap = new HashMap<>();
     private float sumWtSamples = 0.0F;
 
-    public LayerDeposit(HashMap<String, HashMap<BlockState, Float>> oreBlocks, HashMap<BlockState, Float> sampleBlocks, int yMin, int yMax, int radius, int depth, int genWt, TagKey<Biome> biomeTag, HashSet<BlockState> blockStateMatchers) {
+    public LayerDeposit(HashMap<String, HashMap<BlockState, Float>> oreBlocks, HashMap<BlockState, Float> sampleBlocks, int yMin, int yMax, int radius, int depth, int genWt, TagKey<Biome> biomeTag, HashSet<BlockState> blockStateMatchers, @Nullable String chunkWhitelistName) {
         this.oreToWtMap = oreBlocks;
         this.sampleToWtMap = sampleBlocks;
         this.yMin = yMin;
@@ -58,6 +60,7 @@ public class LayerDeposit implements IDeposit {
         this.genWt = genWt;
         this.biomeTag = biomeTag;
         this.blockStateMatchers = blockStateMatchers;
+        this.chunkWhitelistName = chunkWhitelistName == null ? "none" : chunkWhitelistName;
 
         // Verify that blocks.default exists.
         if (!this.oreToWtMap.containsKey("default")) {
@@ -159,13 +162,16 @@ public class LayerDeposit implements IDeposit {
     public int generate(WorldGenLevel level, BlockPos pos, IDepositCapability deposits, IChunkGennedCapability chunksGenerated) {
         /* Dimension checking is done in PlutonRegistry#pick */
         /* Check biome allowance */
+        ChunkPos thisChunk = new ChunkPos(pos);
+        if (!ChunkWhitelist.isAllowed(this.chunkWhitelistName, thisChunk)) {
+            return 0;
+        }
+
         if (!this.canPlaceInBiome(level.getBiome(pos))) {
             return 0;
         }
 
         int totlPlaced = 0;
-
-        ChunkPos thisChunk = new ChunkPos(pos);
 
         int x = ((thisChunk.getMinBlockX() + thisChunk.getMaxBlockX()) / 2) - level.getRandom().nextInt(8) + level.getRandom().nextInt(16);
         int y = this.yMin + level.getRandom().nextInt(Math.abs(this.yMax - this.yMin));
@@ -213,11 +219,14 @@ public class LayerDeposit implements IDeposit {
     @Override
     public void afterGen(WorldGenLevel level, BlockPos pos, IDepositCapability deposits, IChunkGennedCapability chunksGenerated) {
         // Debug the pluton
+        ChunkPos thisChunk = new ChunkPos(pos);
+        if (!ChunkWhitelist.isAllowed(this.chunkWhitelistName, thisChunk)) {
+            return;
+        }
         if (CommonConfig.DEBUG_WORLD_GEN.get()) {
             Geolosys.getInstance().LOGGER.info("Generated {} in Chunk {} (Pos [{} {} {}])", this.toString(), new ChunkPos(pos), pos.getX(), pos.getY(), pos.getZ());
         }
 
-        ChunkPos thisChunk = new ChunkPos(pos);
         int maxSampleCnt = Math.min(CommonConfig.MAX_SAMPLES_PER_CHUNK.get(), (this.radius / CommonConfig.MAX_SAMPLES_PER_CHUNK.get()) + (this.radius % CommonConfig.MAX_SAMPLES_PER_CHUNK.get()));
         for (int i = 0; i < maxSampleCnt; i++) {
             BlockState tmp = this.getSample(level.getRandom());
@@ -264,8 +273,9 @@ public class LayerDeposit implements IDeposit {
             if (json.has("blockStateMatchers")) {
                 blockStateMatchers = SerializerUtils.toBlockStateList(json.get("blockStateMatchers").getAsJsonArray());
             }
+            String chunkListName = json.get("chunkWhitelist") != null ? json.get("chunkWhitelist").getAsString() : null;
 
-            return new LayerDeposit(oreBlocks, sampleBlocks, yMin, yMax, radius, depth, genWt, biomeTag, blockStateMatchers);
+            return new LayerDeposit(oreBlocks, sampleBlocks, yMin, yMax, radius, depth, genWt, biomeTag, blockStateMatchers, chunkListName);
         } catch (Exception e) {
             Geolosys.getInstance().LOGGER.error("Failed to parse: {}", e.getMessage());
             return null;
@@ -285,6 +295,7 @@ public class LayerDeposit implements IDeposit {
         config.addProperty("depth", this.depth);
         config.addProperty("generationWeight", this.genWt);
         config.addProperty("biomeTag", this.biomeTag.location().toString());
+        config.addProperty("chunkWhitelist", this.chunkWhitelistName);
 
         // Glue the two parts of this together.
         json.addProperty("type", JSON_TYPE);

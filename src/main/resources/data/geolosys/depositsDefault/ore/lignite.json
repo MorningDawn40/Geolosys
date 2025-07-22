@@ -1,14 +1,16 @@
 {
-  "type": "geolosys:deposit_dense",
+  "type": "geolosys:deposit_layer",
   "config": {
-    "yMin": -64,
+    "yMin": -4,
     "yMax": 32,
-    "size": 40,
-    "biomeTag": "#minecraft:is_overworld",
+    "radius": 3,
+    "depth": 4,
+    "biomeTag": "#minecraft:is_forest",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {
-          "block": "geolosys:gold_ore",
+          "block": "geolosys:lignite_ore",
           "chance": 0.85
         },
         {
@@ -18,7 +20,7 @@
       ],
       "minecraft:deepslate": [
         {
-          "block": "geolosys:deepslate_gold_ore",
+          "block": "geolosys:deepslate_lignite_ore",
           "chance": 0.85
         },
         {
@@ -29,10 +31,10 @@
     },
     "samples": [
       {
-        "block": "geolosys:gold_ore_sample",
+        "block": "geolosys:lignite_ore_sample",
         "chance": 1.0
       }
     ],
-    "generationWeight": 4
+    "generationWeight": 7
   }
 }

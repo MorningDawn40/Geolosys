@@ -1,14 +1,16 @@
 {
-  "type": "geolosys:deposit_dike",
+  "type": "geolosys:deposit_layer",
   "config": {
-    "yMin": -48,
-    "yMax": -32,
-    "baseRadius": 6,
-    "biomeTag": "#geolosys:is_marshy",
+    "yMax": -52,
+    "yMin": -64,
+    "radius": 3,
+    "depth": 4,
+    "biomeTag": "#minecraft:is_forest",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {
-          "block": "geolosys:limonite_ore",
+          "block": "geolosys:anthracite_coal_ore",
           "chance": 0.65
         },
         {
@@ -18,7 +20,7 @@
       ],
       "minecraft:deepslate": [
         {
-          "block": "geolosys:deepslate_limonite_ore",
+          "block": "geolosys:deepslate_anthracite_coal_ore",
           "chance": 0.65
         },
         {
@@ -29,7 +31,7 @@
     },
     "samples": [
       {
-        "block": "geolosys:limonite_ore_sample",
+        "block": "geolosys:anthracite_coal_ore_sample",
         "chance": 1.0
       }
     ],

@@ -9,6 +9,7 @@
     "geolosys:malachite_ore",
     "geolosys:nether_gold_ore",
     "geolosys:quartz_ore",
-    "geolosys:sphalerite_ore"
+    "geolosys:sphalerite_ore",
+    "geolosys:copper_ore"
   ]
 }

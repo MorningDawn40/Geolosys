@@ -98,6 +98,7 @@ public class Registry {
         NeedItemBlocks.add(BlockRegistry.register("ancient_debris_ore_sample", SampleBlock::new));
         NeedItemBlocks.add(BlockRegistry.register("nether_gold_ore", () -> new OreBlock(netherProps.sound(SoundType.NETHER_GOLD_ORE), 1)));
         NeedItemBlocks.add(BlockRegistry.register("nether_gold_ore_sample", SampleBlock::new));
+        NeedItemBlocks.add(BlockRegistry.register("copper_ore", () -> new OreBlock(Block.Properties.of().strength(3.0F, 3.0F).sound(SoundType.STONE).mapColor(MapColor.STONE).requiresCorrectToolForDrops(), 0)));
 
         UniversalMaterials.forEach((name, xp) -> {
             NeedItemBlocks.add(BlockRegistry.register(name + "_ore", () -> new OreBlock(baseProps, xp)));

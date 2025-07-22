@@ -5,7 +5,8 @@
     "yMax": 32,
     "size": 32,
     "spread": 32,
-    "biomeTag": "#forge:is_plains",
+    "biomeTag": "is_plains",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {

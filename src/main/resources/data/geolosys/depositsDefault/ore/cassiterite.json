@@ -5,7 +5,8 @@
     "yMax": 68,
     "size": 24,
     "density": 1.0,
-    "biomeTag": "#geolosys:is_sandy",
+    "biomeTag": "#minecraft:is_forest",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {

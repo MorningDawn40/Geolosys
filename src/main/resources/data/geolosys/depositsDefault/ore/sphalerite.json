@@ -1,31 +1,32 @@
 {
   "type": "geolosys:deposit_sparse",
   "config": {
-    "yMin": 34,
-    "yMax": 78,
-    "size": 48,
+    "yMin": 37,
+    "yMax": 46,
     "spread": 48,
-    "biomeTag": "#minecraft:is_overworld",
+    "size": 28,
+    "biomeTag": "#minecraft:is_forest",
+    "chunkWhitelist": "default_whitelist",
     "blocks": {
       "default": [
         {
-          "block": "geolosys:coal_ore",
+          "block": "geolosys:sphalerite_ore",
           "chance": 1.0
         }
       ],
       "minecraft:deepslate": [
         {
-          "block": "geolosys:deepslate_coal_ore",
+          "block": "geolosys:deepslate_sphalerite_ore",
           "chance": 1.0
         }
       ]
     },
     "samples": [
       {
-        "block": "geolosys:coal_ore_sample",
+        "block": "geolosys:sphalerite_ore_sample",
         "chance": 1.0
       }
     ],
-    "generationWeight": 6
+    "generationWeight": 5
   }
 }
