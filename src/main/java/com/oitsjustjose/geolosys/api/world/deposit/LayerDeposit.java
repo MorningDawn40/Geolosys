@@ -178,7 +178,7 @@ public class LayerDeposit implements IDeposit {
         int z = ((thisChunk.getMinBlockZ() + thisChunk.getMaxBlockZ()) / 2) - level.getRandom().nextInt(8) + level.getRandom().nextInt(16);
         int max = Utils.getTopSolidBlock(level, pos).getY();
         if (y > max) {
-            y = Math.max(yMin, max);
+            return 0;
         }
 
         BlockPos basePos = new BlockPos(x, y, z);

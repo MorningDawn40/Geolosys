@@ -172,7 +172,7 @@ public class DenseDeposit implements IDeposit {
         int randY = this.yMin + level.getRandom().nextInt(this.yMax - this.yMin);
         int max = Utils.getTopSolidBlock(level, new BlockPos(baseX, 0, baseZ)).getY();
         if (randY > max) {
-            randY = Math.max(yMin, max);
+            return 0;
         }
 
         float ranFlt = level.getRandom().nextFloat() * (float) Math.PI;

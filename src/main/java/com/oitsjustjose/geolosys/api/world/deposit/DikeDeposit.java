@@ -176,7 +176,7 @@ public class DikeDeposit implements IDeposit {
         int yMax = this.yMax - level.getRandom().nextInt(height / 4);
         int max = Utils.getTopSolidBlock(level, pos).getY();
         if (yMin > max) {
-            yMin = Math.max(yMin, max);
+            return 0;
         } else if (yMin == yMax) {
             yMax = this.yMax;
         }
