@@ -6,12 +6,13 @@ import net.minecraft.world.item.crafting.RecipeType;
 
 import javax.annotation.Nullable;
 
-public class CoalItem extends Item {
+public class FuelItem extends Item {
 
-    private int burnTime;
+    private final int smeltCount;
 
-    public CoalItem(int burnTime) {
+    public FuelItem(int smeltCount) {
         super(new Item.Properties().fireResistant());
+        this.smeltCount = smeltCount;
     }
 
     @Override
@@ -20,6 +21,6 @@ public class CoalItem extends Item {
     }
 
     public int getBurnTime() {
-        return this.burnTime;
+        return this.smeltCount * 200;
     }
 }
