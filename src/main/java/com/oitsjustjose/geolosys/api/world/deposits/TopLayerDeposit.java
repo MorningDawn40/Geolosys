@@ -10,6 +10,7 @@ import com.oitsjustjose.geolosys.capability.world.IChunkGennedCapability;
 import com.oitsjustjose.geolosys.common.config.CommonConfig;
 import com.oitsjustjose.geolosys.common.data.serializer.SerializerUtils;
 import com.oitsjustjose.geolosys.common.utils.Utils;
+import com.oitsjustjose.geolosys.common.world.ChunkWhitelist;
 import com.oitsjustjose.geolosys.common.world.feature.FeatureUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,8 +34,8 @@ public class TopLayerDeposit extends AbstractDeposit {
     private final int depth;
     private final float sampleChance;
 
-    public TopLayerDeposit(HashMap<String, HashMap<BlockState, Float>> matcherToOreWeightPair, HashMap<BlockState, Float> sampleWeightPair, int radius, int depth, float sampleChance, int generationWeight, TagKey<Biome> biomeKey, HashSet<BlockState> matchers) {
-        super(matcherToOreWeightPair, sampleWeightPair, biomeKey, matchers, generationWeight);
+    public TopLayerDeposit(HashMap<String, HashMap<BlockState, Float>> matcherToOreWeightPair, HashMap<BlockState, Float> sampleWeightPair, int radius, int depth, float sampleChance, int generationWeight, TagKey<Biome> biomeKey, HashSet<BlockState> matchers, @Nullable String chunkWhitelistName) {
+        super(matcherToOreWeightPair, sampleWeightPair, biomeKey, matchers, generationWeight, chunkWhitelistName);
         this.radius = radius;
         this.depth = depth;
         this.sampleChance = sampleChance;
@@ -50,12 +52,15 @@ public class TopLayerDeposit extends AbstractDeposit {
     public int generate(WorldGenLevel level, BlockPos pos, IDepositCapability deposits, IChunkGennedCapability chunksGenerated) {
         /* Dimension checking is done in PlutonRegistry#pick */
         /* Check biome allowance */
+        ChunkPos thisChunk = new ChunkPos(pos);
+        if (!ChunkWhitelist.isAllowed(this.chunkWhitelistName, thisChunk)) {
+            return 0;
+        }
         if (!this.canPlaceInBiome(level.getBiome(pos))) {
             return 0;
         }
 
         int totlPlaced = 0;
-        ChunkPos thisChunk = new ChunkPos(pos);
 
         int x = ((thisChunk.getMinBlockX() + thisChunk.getMaxBlockX()) / 2) - level.getRandom().nextInt(8) + level.getRandom().nextInt(16);
         int z = ((thisChunk.getMinBlockZ() + thisChunk.getMaxBlockZ()) / 2) - level.getRandom().nextInt(8) + level.getRandom().nextInt(16);
@@ -110,6 +115,10 @@ public class TopLayerDeposit extends AbstractDeposit {
     @Override
     public void afterGen(WorldGenLevel level, BlockPos pos, IDepositCapability deposits, IChunkGennedCapability chunksGenerated) {
         // Debug the pluton
+        ChunkPos thisChunk = new ChunkPos(pos);
+        if (!ChunkWhitelist.isAllowed(this.chunkWhitelistName, thisChunk)) {
+            return;
+        }
         if (CommonConfig.DEBUG_WORLD_GEN.get()) {
             Geolosys.getInstance().LOGGER.info("Generated {} in Chunk {} (Pos [{} {} {}])", this.toString(), new ChunkPos(pos), pos.getX(), pos.getY(), pos.getZ());
         }
@@ -135,8 +144,9 @@ public class TopLayerDeposit extends AbstractDeposit {
             if (json.has("blockStateMatchers")) {
                 blockStateMatchers = SerializerUtils.toBlockStateList(json.get("blockStateMatchers").getAsJsonArray());
             }
+            String chunkListName = json.get("chunkWhitelist") != null ? json.get("chunkWhitelist").getAsString() : null;
 
-            return new TopLayerDeposit(oreBlocks, sampleBlocks, radius, depth, sampleChance, genWt, biomeTag, blockStateMatchers);
+            return new TopLayerDeposit(oreBlocks, sampleBlocks, radius, depth, sampleChance, genWt, biomeTag, blockStateMatchers, chunkListName);
         } catch (Exception e) {
             Geolosys.getInstance().LOGGER.error("Failed to parse: {}", e.getMessage());
             return null;
@@ -155,6 +165,7 @@ public class TopLayerDeposit extends AbstractDeposit {
         config.addProperty("chanceForSample", this.sampleChance);
         config.addProperty("generationWeight", this.generationWeight);
         config.addProperty("biomeTag", this.biomeKey.location().toString());
+        config.addProperty("chunkWhitelist", this.chunkWhitelistName);
         // Glue the two parts of this together.
         json.addProperty("type", JSON_TYPE);
         json.add("config", config);

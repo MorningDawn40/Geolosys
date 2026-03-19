@@ -22,6 +22,7 @@ public abstract class AbstractDeposit {
     protected final HashMap<String, HashMap<BlockState, Float>> matcherToOreWeightPair;
     protected final HashMap<BlockState, Float> sampleWeightPair;
     protected final TagKey<Biome> biomeKey;
+    protected final String chunkWhitelistName;
     protected final HashSet<BlockState> matchers;
     protected final int generationWeight;
 
@@ -30,13 +31,15 @@ public abstract class AbstractDeposit {
             HashMap<BlockState, Float> sampleWeightPair,
             TagKey<Biome> biomeKey,
             HashSet<BlockState> matchers,
-            int generationWeight
+            int generationWeight,
+            @Nullable String chunkWhitelistName
     ) {
         this.matcherToOreWeightPair = matcherToOreWeightPair;
         this.sampleWeightPair = sampleWeightPair;
         this.biomeKey = biomeKey;
         this.matchers = matchers;
         this.generationWeight = generationWeight;
+        this.chunkWhitelistName = chunkWhitelistName;
     }
 
     /**

@@ -10,6 +10,7 @@ import com.oitsjustjose.geolosys.capability.world.IChunkGennedCapability;
 import com.oitsjustjose.geolosys.common.config.CommonConfig;
 import com.oitsjustjose.geolosys.common.data.serializer.SerializerUtils;
 import com.oitsjustjose.geolosys.common.utils.Utils;
+import com.oitsjustjose.geolosys.common.world.ChunkWhitelist;
 import com.oitsjustjose.geolosys.common.world.SampleUtils;
 import com.oitsjustjose.geolosys.common.world.feature.FeatureUtils;
 import net.minecraft.core.BlockPos;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,12 +33,14 @@ public class DikeDeposit extends AbstractDeposit {
 
     private final int yMin;
     private final int yMax;
+    private final int height;
     private final int baseRadius;
 
-    public DikeDeposit(HashMap<String, HashMap<BlockState, Float>> matcherToOreWeightPair, HashMap<BlockState, Float> sampleWeightPair, int yMin, int yMax, int baseRadius, int generationWeight, TagKey<Biome> biomeKey, HashSet<BlockState> matchers) {
-        super(matcherToOreWeightPair, sampleWeightPair, biomeKey, matchers, generationWeight);
+    public DikeDeposit(HashMap<String, HashMap<BlockState, Float>> matcherToOreWeightPair, HashMap<BlockState, Float> sampleWeightPair, int yMin, int yMax, int height, int baseRadius, int generationWeight, TagKey<Biome> biomeKey, HashSet<BlockState> matchers, @Nullable String chunkWhitelistName) {
+        super(matcherToOreWeightPair, sampleWeightPair, biomeKey, matchers, generationWeight, chunkWhitelistName);
         this.yMin = yMin;
         this.yMax = yMax;
+        this.height = height;
         this.baseRadius = baseRadius;
         validate(matcherToOreWeightPair, sampleWeightPair);
     }
@@ -50,21 +54,27 @@ public class DikeDeposit extends AbstractDeposit {
     public int generate(WorldGenLevel level, BlockPos pos, IDepositCapability deposits, IChunkGennedCapability chunksGenerated) {
         /* Dimension checking is done in PlutonRegistry#pick */
         /* Check biome allowance */
+        ChunkPos thisChunk = new ChunkPos(pos);
+        if (!ChunkWhitelist.isAllowed(this.chunkWhitelistName, thisChunk)) {
+            return 0;
+        }
         if (!this.canPlaceInBiome(level.getBiome(pos))) {
             return 0;
         }
 
-        ChunkPos thisChunk = new ChunkPos(pos);
-        int height = Math.abs((this.yMax - this.yMin));
         int x = thisChunk.getMinBlockX() + level.getRandom().nextInt(16);
         int z = thisChunk.getMinBlockZ() + level.getRandom().nextInt(16);
+        int y = this.yMin + level.getRandom().nextInt(this.yMax-this.yMin);
 
         int max = Utils.getTopSolidBlock(level, pos).getY() - 1;
+        if (y > max) {
+            return 0;
+        }
 
-        int yStart = this.yMin + level.getRandom().nextInt(height / 4);
-        yStart = yStart > max ? yMin : yStart;
+        int yStart = y - height/2;
+        yStart = Math.max(yStart, -60);
 
-        int yEnd = this.yMax - level.getRandom().nextInt(height / 4);
+        int yEnd = y + height/2;
         yEnd = Math.min(yEnd, max);
 
         BlockPos basePos = new BlockPos(x, yStart, z);
@@ -118,12 +128,15 @@ public class DikeDeposit extends AbstractDeposit {
 
     @Override
     public void afterGen(WorldGenLevel level, BlockPos pos, IDepositCapability deposits, IChunkGennedCapability chunksGenerated) {
+        ChunkPos thisChunk = new ChunkPos(pos);
+        if (!ChunkWhitelist.isAllowed(this.chunkWhitelistName, thisChunk)) {
+            return;
+        }
         // Debug the pluton
         if (CommonConfig.DEBUG_WORLD_GEN.get()) {
             Geolosys.getInstance().LOGGER.info("Generated {} in Chunk {} (Pos [{} {} {}])", this.toString(), new ChunkPos(pos), pos.getX(), pos.getY(), pos.getZ());
         }
 
-        ChunkPos thisChunk = new ChunkPos(pos);
         int maxSampleCnt = Math.min(CommonConfig.MAX_SAMPLES_PER_CHUNK.get(), (this.baseRadius / CommonConfig.MAX_SAMPLES_PER_CHUNK.get()) + (this.baseRadius % CommonConfig.MAX_SAMPLES_PER_CHUNK.get()));
         maxSampleCnt = Math.max(maxSampleCnt, 1);
         for (int i = 0; i < maxSampleCnt; i++) {
@@ -157,6 +170,7 @@ public class DikeDeposit extends AbstractDeposit {
             HashMap<BlockState, Float> sampleBlocks = SerializerUtils.buildMultiBlockMap(json, "samples");
             int yMin = json.get("yMin").getAsInt();
             int yMax = json.get("yMax").getAsInt();
+            int height = json.get("height").getAsInt();
             int baseRadius = json.get("baseRadius").getAsInt();
             int genWt = json.get("generationWeight").getAsInt();
             TagKey<Biome> biomeTag = TagKey.create(Registries.BIOME, new ResourceLocation(json.get("biomeTag").getAsString().replace("#", "")));
@@ -166,8 +180,9 @@ public class DikeDeposit extends AbstractDeposit {
             if (json.has("blockStateMatchers")) {
                 blockStateMatchers = SerializerUtils.toBlockStateList(json.get("blockStateMatchers").getAsJsonArray());
             }
+            String chunkListName = json.get("chunkWhitelist") != null ? json.get("chunkWhitelist").getAsString() : null;
 
-            return new DikeDeposit(oreBlocks, sampleBlocks, yMin, yMax, baseRadius, genWt, biomeTag, blockStateMatchers);
+            return new DikeDeposit(oreBlocks, sampleBlocks, yMin, yMax, height, baseRadius, genWt, biomeTag, blockStateMatchers, chunkListName);
         } catch (Exception e) {
             Geolosys.getInstance().LOGGER.error("Failed to parse: {}", e.getMessage());
             return null;
@@ -183,9 +198,11 @@ public class DikeDeposit extends AbstractDeposit {
         config.add("samples", SerializerUtils.deconstructMultiBlockMap(this.sampleWeightPair));
         config.addProperty("yMin", this.yMin);
         config.addProperty("yMax", this.yMax);
+        config.addProperty("height", this.height);
         config.addProperty("baseRadius", this.baseRadius);
         config.addProperty("generationWeight", this.generationWeight);
         config.addProperty("biomeTag", this.biomeKey.location().toString());
+        config.addProperty("chunkWhitelist", this.chunkWhitelistName);
         // Glue the two parts of this together.
         json.addProperty("type", JSON_TYPE);
         json.add("config", config);
